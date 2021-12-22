@@ -2,5 +2,7 @@
 <project version="4">
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/Ch3-决策树/classifierStorage.txt" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Ch4-朴素贝叶斯/email/ham/1.txt" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/Ch4-朴素贝叶斯/email/spam/10.txt" charset="UTF-8" />
   </component>
 </project>
