@@ -160,3 +160,10 @@ def grabTree(filename):
     # 文件模式为字节处理
     fr = open(filename, "rb+")
     return pickle.load(fr)
+
+# fr = open('lenses.txt')
+# lenses=[inst.strip().split('\t') for inst in fr.readlines()]
+# lensesLabels=['age','prescript','astigmatic','tearRate']
+# lensesTree=trees.create_tree(lenses,lensesLabels)
+# treePlotter.createPlot(lens)
+
