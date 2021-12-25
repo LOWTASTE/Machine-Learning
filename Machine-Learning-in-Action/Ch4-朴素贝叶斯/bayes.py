@@ -1,10 +1,10 @@
 from numpy import *
 import re
 import operator
-
+import feedparser
 
 '''
-    example - 1
+    example - 1 过滤网站的恶意留言
 '''
 
 
@@ -159,7 +159,7 @@ def bag_of_word_vec(vocab_list, input_set):
 
 # 切割分类文本
 def text_parse(big_string):
-    list_of_tokens = re.split(r'\W*', big_string)
+    list_of_tokens = re.split(r'\W+', big_string)
     return [tok.lower() for tok in list_of_tokens if len(tok) > 2]
 
 
@@ -198,18 +198,29 @@ def spam_test():
         del (train_set[rand_index])
     train_matrix = []
     train_class = []
-    # 对测试集合进行分类
     for doc_index in train_set:
         train_matrix.append(bag_of_word_vec(vocab_list, doc_list[doc_index]))
         train_class.append(class_list[doc_index])
-        p0_vec, p1_vec, p_spam = train(array(train_matrix), array(train_class))
-        error_count = 0
-        for doc_index in test_set:
-            word_vector = bag_of_word_vec(vocab_list, doc_list[doc_index])
-            if classify(array(word_vector), p0_vec, p1_vec, p_spam) != class_list[doc_index]:
-                error_count += 1
-                # print("classification error", doc_list[doc_index])
-        print('the error rate is: ', float(error_count) / len(test_set))
+    p0_vec, p1_vec, p_spam = train(array(train_matrix), array(train_class))
+    error_count = 0
+    # 对测试集合进行分类
+    for doc_index in test_set:
+        word_vector = bag_of_word_vec(vocab_list, doc_list[doc_index])
+        if classify(array(word_vector), p0_vec, p1_vec, p_spam) != class_list[doc_index]:
+            error_count += 1
+            print("classification error", doc_list[doc_index])
+    print('the error rate is: ', float(error_count) / len(test_set))
+
+
+'''
+    example - 3 使用朴素贝叶斯分类器从个人广告中获取区域倾向 
+    将使用来自不同城市的广告训练一个分类器，然后观察分类器的效果。
+    我们的目的并不是使用该分类器进行分类，而是通过观察单词和条件概率值来发现与特定城市相关的内容。
+    
+    RSS 源:
+    http://www.nasa.gov/rss/dyn/image_of_the_day.rss
+    https://feed.iplaysoft.com/
+'''
 
 
 # RSS源分类器和高频去除函数
@@ -217,13 +228,20 @@ def calc_most_freq(vocab_list, full_text):
     freq_dict = {}
     for token in vocab_list:
         freq_dict[token] = full_text.count(token)
-
-    sorted_freq = sorted(freq_dict.tems(),
-                         key=operator.itemgetter(1), reverse=True)
+    sorted_freq = sorted(freq_dict.items(), key=operator.itemgetter(1), reverse=True)
     return sorted_freq[:30]
 
 
 def local_words(feed0, feed1):
+    """使用两个RSS源作为参数, RSS源会随时间而改变,
+    调用函数calcMostFreq()来获得排序最高的30个单词并随后将它们移除
+
+    另一个常用的方法是不仅移除高频词，同时从某个预定词表中移除结构上的辅助词。
+    该词表称为停用词表（stop word list），目前可以找到许多停用词表。
+    :param feed0:
+    :param feed1:
+    :return:
+    """
     doc_list = []
     class_list = []
     full_text = []
@@ -245,7 +263,7 @@ def local_words(feed0, feed1):
     for pair_w in top_words:
         if pair_w[0] in vocab_list:
             vocab_list.remove(pair_w[0])
-    train_set = range(2 * min_len)
+    train_set = list(range(2 * min_len))
     test_set = []  #
     for i in range(20):
         rand_index = int(random.uniform(0, len(train_set)))
@@ -278,10 +296,15 @@ def get_top_words(ny, sf):
         if p1_vec[i] > -6.0:
             top_ny.append((vocab_list[i], p1_vec[i]))
     sorted_sf = sorted(top_sf, key=lambda pair: pair[1], reverse=True)
-    print("sf**sf**sf**sf**sf**sf**sf**sf**sf**sf**sf**sf**sf**sf**sf**sf**")
+    print("http://www.nasa.gov/rss/dyn/image_of_the_day.rss")
     for item in sorted_sf:
         print(item[0])
     sorted_ny = sorted(top_ny, key=lambda pair: pair[1], reverse=True)
-    print("ny**ny**ny**ny**ny**ny**ny**ny**ny**ny**ny**ny**ny**ny**ny**ny**")
+    print("https://feed.iplaysoft.com/")
     for item in sorted_ny:
         print(item[0])
+
+
+# ny = feedparser.parse('http://www.nasa.gov/rss/dyn/image_of_the_day.rss')
+# sf = feedparser.parse('https://sports.yahoo.com/nba/teams/hou/rss/')
+# get_top_words(ny, sf)
